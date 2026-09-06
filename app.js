@@ -1,7 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const connectMongo = require("connect-mongo");
+const MongoStore = connectMongo.default || connectMongo.MongoStore || connectMongo;
 const path = require("path");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
