@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Transaction | FinTrack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a href="/dashboard" class="sidebar-brand">
+      <span>💰</span> FinTrack
+    </a>
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="sidebar-link">
+        <span>📊</span> Dashboard
+      </a>
+      <a href="/analytics" class="sidebar-link">
+        <span>📈</span> Analytics
+      </a>
+      <a href="/add-transaction" class="sidebar-link active">
+        <span>➕</span> Add Transaction
+      </a>
+      <a href="/budget" class="sidebar-link">
+        <span>🎯</span> Budget
+      </a>
+      <a href="/profile" class="sidebar-link">
+        <span>👤</span> Profile
+      </a>
+      <a href="/logout" class="sidebar-link text-danger mt-auto">
+        <span>🚪</span> Logout
+      </a>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary">
+      <div>
+        <h2 class="fw-bold mb-1">Add New Transaction</h2>
+        <p class="text-secondary mb-0">Record your income or expense entry.</p>
+      </div>
+      <a href="/dashboard" class="btn btn-outline-secondary">← Back to Dashboard</a>
+    </div>
+
+    <!-- ERROR ALERTS -->
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% } %>
+
+    <div class="card-box mx-auto" style="max-width: 650px;">
+      <form method="POST" action="/add-transaction" id="transactionForm">
+        
+        <!-- TITLE -->
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-bold">Title / Description</label>
+          <input 
+            type="text" 
+            name="title" 
+            class="form-control" 
+            placeholder="e.g. Grocery Shopping, Monthly Salary" 
+            required
+          >
+        </div>
+
+        <div class="row g-3 mb-3">
+          <!-- AMOUNT -->
+          <div class="col-md-6">
+            <label class="form-label text-secondary small fw-bold">Amount (Rs.)</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              min="0.01" 
+              name="amount" 
+              class="form-control" 
+              placeholder="0.00" 
+              required
+            >
+          </div>
+
+          <!-- TYPE -->
+          <div class="col-md-6">
+            <label class="form-label text-secondary small fw-bold">Transaction Type</label>
+            <select name="type" class="form-select" required>
+              <option value="expense" selected>Expense</option>
+              <option value="income">Income</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <!-- DATE -->
+          <div class="col-md-6">
+            <label class="form-label text-secondary small fw-bold">Date</label>
+            <input 
+              type="date" 
+              name="date" 
+              id="transactionDate" 
+              class="form-control" 
+              required
+            >
+          </div>
+
+          <!-- CATEGORY -->
+          <div class="col-md-6">
+            <label class="form-label text-secondary small fw-bold">Category</label>
+            <select name="category" id="categorySelect" class="form-select" onchange="toggleCustomCategory()" required>
+              <option value="Food">Food & Dining</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Salary">Salary & Income</option>
+              <option value="Travel">Travel & Fuel</option>
+              <option value="Bills">Bills & Utilities</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Investment">Investment</option>
+              <option value="Health">Health & Medical</option>
+              <option value="Other">Other (Custom)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CUSTOM CATEGORY BOX -->
+        <div class="mb-3" id="customCategoryBox" style="display: none;">
+          <label class="form-label text-secondary small fw-bold">Custom Category Name</label>
+          <input 
+            type="text" 
+            name="customCategory" 
+            id="customCategory" 
+            class="form-control" 
+            placeholder="Enter custom category name"
+          >
+        </div>
+
+        <!-- RECURRING -->
+        <div class="mb-4">
+          <label class="form-label text-secondary small fw-bold">Is this a Recurring Transaction?</label>
+          <select name="recurring" class="form-select">
+            <option value="false" selected>No (One-time transaction)</option>
+            <option value="true">Yes (Recurring transaction)</option>
+          </select>
+          <small class="text-secondary d-block mt-1">Marks transaction as recurring for financial tracking purposes.</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+          Add Transaction
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Set default date to today
+    document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+
+    function toggleCustomCategory() {
+      const select = document.getElementById('categorySelect');
+      const box = document.getElementById('customCategoryBox');
+      const customInput = document.getElementById('customCategory');
+      
+      if (select.value === 'Other') {
+        box.style.display = 'block';
+        customInput.required = true;
+      } else {
+        box.style.display = 'none';
+        customInput.required = false;
+        customInput.value = '';
+      }
+    }
+  </script>
+</body>
+</html>
