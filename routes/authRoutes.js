@@ -83,9 +83,13 @@ router.get("/login", (req, res) => {
 // ======================
 router.post("/login", async (req, res) => {
   try {
+    console.log("--- LOGIN ATTEMPT ---");
+    console.log("Body:", req.body);
+
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.log("Missing email or password");
       return res.render("auth/login", {
         error: "Please provide both email and password.",
         success: null,
@@ -93,16 +97,22 @@ router.post("/login", async (req, res) => {
     }
 
     const emailLower = email.trim().toLowerCase();
+    console.log("Looking up user:", emailLower);
 
     const user = await User.findOne({ email: emailLower });
     if (!user) {
+      console.log("User not found:", emailLower);
       return res.render("auth/login", {
         error: "Invalid email or password.",
         success: null,
       });
     }
 
+    console.log("User found:", user._id);
+
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Password match:", isMatch);
+
     if (!isMatch) {
       return res.render("auth/login", {
         error: "Invalid email or password.",
@@ -117,10 +127,17 @@ router.post("/login", async (req, res) => {
       email: user.email,
     };
 
+    console.log("Session set, saving...");
+
     req.session.save((err) => {
       if (err) {
         console.error("Session Save Error:", err);
+        return res.render("auth/login", {
+          error: "Login failed due to a session error. Please try again.",
+          success: null,
+        });
       }
+      console.log("Session saved, redirecting to dashboard...");
       res.redirect("/dashboard");
     });
   } catch (err) {
