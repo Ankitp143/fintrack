@@ -52,6 +52,7 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
   message: "Too many requests. Please try again after 15 minutes.",
+  validate: { xForwardedForHeader: false }, // Disable proxy header validation for Render
 });
 app.use("/login", authLimiter);
 app.use("/register", authLimiter);
