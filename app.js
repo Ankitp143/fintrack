@@ -66,18 +66,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Enable trust proxy for all proxies (Render, Cloudflare, etc.)
+app.set("trust proxy", true);
+
 // ======================
 // SESSION CONFIGURATION
 // ======================
 const sessionConfig = {
   secret: process.env.SESSION_SECRET || "fintrack_super_secret_key_2026",
-  resave: false,
+  resave: true,
   saveUninitialized: false,
+  proxy: true,
   cookie: {
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: "auto", // Automatically handles HTTPS cookies over proxy without dropping session
   },
 };
 
