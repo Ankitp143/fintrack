@@ -2,8 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const path = require("path");
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
 
 require("dotenv").config();
 
@@ -24,40 +22,6 @@ mongoose
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
 // ======================
-// SECURITY MIDDLEWARE
-// ======================
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: [
-          "'self'",
-          "'unsafe-inline'",
-          "https://cdn.jsdelivr.net",
-        ],
-        styleSrc: [
-          "'self'",
-          "'unsafe-inline'",
-          "https://cdn.jsdelivr.net",
-        ],
-        imgSrc: ["'self'", "data:", "https:"],
-      },
-    },
-  })
-);
-
-// Rate limiter for auth routes
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 50,
-  message: "Too many requests. Please try again after 15 minutes.",
-  validate: { xForwardedForHeader: false }, // Disable proxy header validation for Render
-});
-app.use("/login", authLimiter);
-app.use("/register", authLimiter);
-
-// ======================
 // GENERAL MIDDLEWARE
 // ======================
 app.use(express.urlencoded({ extended: true }));
@@ -76,7 +40,7 @@ app.use(
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 1 day
       sameSite: "lax",
-      secure: false, // Keep false — works on both HTTP and HTTPS via Render proxy
+      secure: false,
     },
   })
 );
