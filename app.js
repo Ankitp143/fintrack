@@ -1,8 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
-const connectMongo = require("connect-mongo");
-const MongoStore = connectMongo.default || connectMongo.MongoStore || connectMongo;
 const path = require("path");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
@@ -11,7 +9,7 @@ require("dotenv").config();
 
 const app = express();
 
-// Trust reverse proxy (e.g. Render, Heroku) to allow secure session cookies over HTTPS
+// Trust reverse proxy (Render, etc.)
 app.set("trust proxy", 1);
 
 // ======================
@@ -49,13 +47,12 @@ app.use(
   })
 );
 
-// Rate limiter for authentication routes
+// Rate limiter for auth routes
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // limit each IP to 50 login/register requests per windowMs
-  message: "Too many auth requests from this IP, please try again after 15 minutes.",
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  message: "Too many requests. Please try again after 15 minutes.",
 });
-
 app.use("/login", authLimiter);
 app.use("/register", authLimiter);
 
@@ -66,35 +63,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Enable trust proxy for all proxies (Render, Cloudflare, etc.)
-app.set("trust proxy", true);
-
 // ======================
 // SESSION CONFIGURATION
 // ======================
-const sessionConfig = {
-  secret: process.env.SESSION_SECRET || "fintrack_super_secret_key_2026",
-  resave: true,
-  saveUninitialized: false,
-  proxy: true,
-  cookie: {
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-    sameSite: "lax",
-    secure: "auto", // Automatically handles HTTPS cookies over proxy without dropping session
-  },
-};
-
-// Use MongoStore in production or if MONGO_URI is set to a remote server
-if (process.env.NODE_ENV === "production" && process.env.MONGO_URI) {
-  sessionConfig.store = MongoStore.create({
-    mongoUrl: process.env.MONGO_URI,
-    collectionName: "sessions",
-    ttl: 24 * 60 * 60,
-  });
-}
-
-app.use(session(sessionConfig));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "fintrack_super_secret_key_2026",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      sameSite: "lax",
+      secure: false, // Keep false — works on both HTTP and HTTPS via Render proxy
+    },
+  })
+);
 
 // ======================
 // VIEW ENGINE
@@ -128,7 +112,7 @@ app.use("/", financeRoutes);
 // ======================
 // 404 & ERROR HANDLING
 // ======================
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).send(`
     <!DOCTYPE html>
     <html>
@@ -140,7 +124,7 @@ app.use((req, res, next) => {
         <div>
           <h1 class="display-1 text-danger">404</h1>
           <h3 class="mb-4">Page Not Found</h3>
-          <p class="text-secondary mb-4">The page you are looking for does not exist or has been moved.</p>
+          <p class="text-secondary mb-4">The page you are looking for does not exist.</p>
           <a href="/dashboard" class="btn btn-primary">Return to Dashboard</a>
         </div>
       </body>
@@ -161,7 +145,7 @@ app.use((err, req, res, next) => {
         <div>
           <h1 class="display-1 text-warning">500</h1>
           <h3 class="mb-4">Something went wrong</h3>
-          <p class="text-secondary mb-4">An unexpected error occurred on the server. Please try again later.</p>
+          <p class="text-secondary mb-4">An unexpected error occurred. Please try again later.</p>
           <a href="/dashboard" class="btn btn-primary">Return to Dashboard</a>
         </div>
       </body>
