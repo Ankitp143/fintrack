@@ -117,7 +117,12 @@ router.post("/login", async (req, res) => {
       email: user.email,
     };
 
-    res.redirect("/dashboard");
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session Save Error:", err);
+      }
+      res.redirect("/dashboard");
+    });
   } catch (err) {
     console.error("Login Error:", err);
     res.render("auth/login", {

@@ -11,6 +11,9 @@ require("dotenv").config();
 
 const app = express();
 
+// Trust reverse proxy (e.g. Render, Heroku) to allow secure session cookies over HTTPS
+app.set("trust proxy", 1);
+
 // ======================
 // DATABASE CONNECTION
 // ======================
